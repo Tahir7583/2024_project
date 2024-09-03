@@ -1,12 +1,18 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 from . models import *
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+
+
 
 # Create your views here.
 
 @api_view(['GET','POST','PUT','DELETE'])
+@permission_classes([IsAuthenticated])   # decorator se permission class ka use kar ke authantication implement
+@authentication_classes([JWTAuthentication]) 
 def company_data(request,pk=None):
    if request.method=='GET':
         obj=Location.objects.all()
@@ -15,7 +21,7 @@ def company_data(request,pk=None):
     
     
 
-   if request.method=='POST': 
+   elif request.method=='POST': 
         jsondata=request.data 
         company_Data={
             'company_name':jsondata["company_name"],
@@ -50,7 +56,7 @@ def company_data(request,pk=None):
    
    
    
-   if request.method=='PUT': 
+   elif request.method=='PUT': 
         jsondata=request.data 
         company_Data={
             'company_name':jsondata["company_name"],
@@ -79,17 +85,17 @@ def company_data(request,pk=None):
         L_serializer=Locationserializer(location_obj,data=location_Data)
         C_serializer=Companyserializer(company_obj,data=company_Data)
 
-        if L_serializer.is_valid():
+        if  L_serializer.is_valid():
             L_serializer.save()
 
-        if C_serializer.is_valid():
+        if  C_serializer.is_valid():
             C_serializer.save()
             return Response ('update successfully')
         return Response ('valid data please')
    
    
    
-   if request.method=='DELETE':
+   elif request.method=='DELETE':
         Data=request.data
         obj=Company.objects.get(id=pk)
         obj.delete()
@@ -110,6 +116,8 @@ def company_data(request,pk=None):
 
 
 class Experience_certificate (APIView):
+    authentication_classes=[JWTAuthentication]
+    permission_classes=[IsAuthenticated]
 
 
     def get(self,request,pk=None):
