@@ -19,7 +19,7 @@ urlpatterns = [
 
       path('applicant/', Experience_certificate.as_view(),name='data'),
        path('applicant-data/<int:pk>', Experience_certificate.as_view(),name='data'),
-       path('applicant-data/<int:pk>', Experience_certificate.as_view(),name='data'),
+      #  path('applicant-data/<int:pk>', Experience_certificate.as_view(),name='data'),
        
        path('gettoken/',TokenObtainPairView.as_view(),name='token_obtain'),     # access or refresh token generate kar ke dega
       path('refreshtoken/',TokenRefreshSlidingView.as_view(),name='token_refresh'), # refresh 

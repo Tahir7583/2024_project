@@ -3,20 +3,31 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 from . models import *
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework_simplejwt.authentication import JWTAuthentication
+# from rest_framework.permissions import IsAuthenticated
 
 
 
 # Create your views here.
 
 @api_view(['GET','POST','PUT','DELETE'])
-@permission_classes([IsAuthenticated])   # decorator se permission class ka use kar ke authantication implement
-@authentication_classes([JWTAuthentication]) 
+# @permission_classes([IsAuthenticated])   # decorator se permission class ka use kar ke authantication implement
+# @authentication_classes([JWTAuthentication]) # using jwt thurogh auth classs
 def company_data(request,pk=None):
    if request.method=='GET':
-        obj=Location.objects.all()
+        companyName=request.GET.get('company_name') # request data se get method ke through company name get kara
+        print(companyName)
+        if companyName: # if conditon se data chek kara 
+            obj=Location.objects.filter(company_id__company_name=companyName) #obj object me company id se company name access kiya filter method se specifik data liya
+
+        else: # agr ek data get nahi karna to all data get hoga
+            obj=Location.objects.all()
+
+
+    
         serializer=Locationserializer(obj,many=True)
+    
         return Response (serializer.data)
     
     
@@ -116,21 +127,26 @@ def company_data(request,pk=None):
 
 
 class Experience_certificate (APIView):
-    authentication_classes=[JWTAuthentication]
-    permission_classes=[IsAuthenticated]
-
-
-    def get(self,request,pk=None):
-        Data=Applicant_certificate.objects.all()
-        serializer=applicant_cert_serializer(Data,many=True)
+    # authentication_classes=[JWTAuthentication]
+    # permission_classes=[IsAuthenticated]
+     
+     
+     
+     def get(self,request,pk=None):
+        companyby_name=request.GET.get('company_name')  #companyby_name variable me request data se get company_name nikala
+        if companyby_name: # if ka use kar ke data avalable he ya nahi
+            obj=Applicant_certificate.objects.filter(applicant_id__company_name=companyby_name) #obj object create kar company name filter kiya
+        else:
+            obj = Applicant_certificate.objects.all()# all data object create 
+        
+        serializer=applicant_cert_serializer(obj,many=True)# get karte time json me data convert
         return Response (serializer.data)
-    
-
-
-
-    
-
-    def post(self,request,pk=None):
+     
+     
+     
+     
+     
+     def post(self,request,pk=None):
         jsondata=request.data 
         ApplicantExperince_Data={
             'company_name':jsondata["company_name"],
@@ -165,14 +181,12 @@ class Experience_certificate (APIView):
             serializer.save()
             return Response (' add  successfully')
         return Response ('enter valid data')
-    
-
-
-
-    
-
-
-    def put(self ,request,pk=None):
+     
+     
+     
+     
+     
+     def put(self ,request,pk=None):
     
         jsondata=request.data
         ApplicantExperince_Data={
@@ -211,10 +225,11 @@ class Experience_certificate (APIView):
 
             return Response ('update data successfully')
         return Response ('not a valid data')
-    
-
-
-    def delete(self,request,pk=None):
+     
+     
+     
+     
+     def delete(self,request,pk=None):
         jsondata=request.data 
         obj=ApplicantExperince.objects.get(id=pk)
         if obj:
