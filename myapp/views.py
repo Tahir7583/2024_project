@@ -3,17 +3,25 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 from . models import *
-from django_filters.rest_framework import DjangoFilterBackend
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-# from rest_framework.permissions import IsAuthenticated
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+
+
+class MyTokenObtainPairView(TokenObtainPairView):    #there class generate token from using serializer class
+    serializer_class = MyTokenObtainPairSerializer
+
 
 
 
 # Create your views here.
 
 @api_view(['GET','POST','PUT','DELETE'])
-# @permission_classes([IsAuthenticated])   # decorator se permission class ka use kar ke authantication implement
-# @authentication_classes([JWTAuthentication]) # using jwt thurogh auth classs
+@permission_classes([IsAuthenticated])   # decorator se permission class ka use kar ke authantication implement
+@authentication_classes([JWTAuthentication]) # using jwt thurogh auth classs
 def company_data(request,pk=None):
    if request.method=='GET':
         companyName=request.GET.get('company_name') # request data se get method ke through company name get kara
@@ -23,12 +31,10 @@ def company_data(request,pk=None):
 
         else: # agr ek data get nahi karna to all data get hoga
             obj=Location.objects.all()
-
-
-    
-        serializer=Locationserializer(obj,many=True)
-    
-        return Response (serializer.data)
+            
+            serializer=Locationserializer(obj,many=True)
+            return Response (serializer.data)
+        
     
     
 
@@ -54,16 +60,24 @@ def company_data(request,pk=None):
             'country':jsondata['country']
 
         }
+
+
+
+
+
+
+
         company_obj=Company.objects.create(**company_Data)
         company_obj.save()
         location_obj=Location.objects.create(company_id=company_obj, **location_Data)
 
         serializer=Locationserializer(location_obj,data=jsondata)
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return Response ('new location and  company add  successfully')
         return Response ('enter valid data ')
-   
+
    
    
    
@@ -134,6 +148,7 @@ class Experience_certificate (APIView):
      
      def get(self,request,pk=None):
         companyby_name=request.GET.get('company_name')  #companyby_name variable me request data se get company_name nikala
+        print(request)
         if companyby_name: # if ka use kar ke data avalable he ya nahi
             obj=Applicant_certificate.objects.filter(applicant_id__company_name=companyby_name) #obj object create kar company name filter kiya
         else:
